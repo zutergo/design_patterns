@@ -15,8 +15,8 @@ public:
 
 template <typename T> class path_map_renderer : public map_renderer<T> {
 public:
-  using GeoData = map_renderer<T>::GeoData;
-  void render(geo_data data) {
+  using GeoData = typename map_renderer<T>::GeoData;
+  void render(GeoData data) {
     std::cout << "Render path"
               << "\n";
   }
@@ -24,8 +24,8 @@ public:
 
 template <typename T> class field_map_renderer : public map_renderer<T> {
 public:
-  using GeoData = map_renderer<T>::GeoData;
-  void render(geo_data data) {
+  using GeoData = typename map_renderer<T>::GeoData;
+  void render(GeoData data) {
     std::cout << "Render field"
               << "\n";
   }
@@ -34,8 +34,8 @@ public:
 template <typename T> class geo_data_provider {
 public:
   using GeoData = T;
-  virtual void register_map_renderer(map_renderer *renderer) = 0;
-  virtual void unregister_map_renderer(map_renderer *renderer) = 0;
+  virtual void register_map_renderer(map_renderer<GeoData> *renderer) = 0;
+  virtual void unregister_map_renderer(map_renderer<GeoData> *renderer) = 0;
   virtual void send_geo_data(GeoData data) = 0;
   virtual ~geo_data_provider() = default;
 };
@@ -43,13 +43,13 @@ public:
 template <typename T>
 class ecu_geo_data_provider : public geo_data_provider<T> {
 public:
-  using GeoData = geo_data_provider<T>::GeoData;
+  using GeoData = typename geo_data_provider<T>::GeoData;
 
-  void register_map_renderer(map_renderer *renderer) override {
+  void register_map_renderer(map_renderer<GeoData> *renderer) override {
     map_renderers_.push_back(renderer);
   }
 
-  void unregister_map_renderer(map_renderer *renderer) override {
+  void unregister_map_renderer(map_renderer<GeoData> *renderer) override {
     map_renderers_.remove(renderer);
   }
 
@@ -60,17 +60,17 @@ public:
   }
 
 private:
-  // vector
-  using RendererContainer = std::list<map_renderer *>;
+  // use vector
+  using RendererContainer = std::list<map_renderer<GeoData> *>;
   RendererContainer map_renderers_;
 };
 
 int main(int argc, char *argv[]) {
-  ecu_geo_data_provider provider;
+  ecu_geo_data_provider<point> provider;
 
   // use unique_ptr
-  map_renderer *path_renderer = new path_map_renderer();
-  map_renderer *field_renderer = new field_map_renderer();
+  map_renderer<point> *path_renderer = new path_map_renderer<point>();
+  map_renderer<point> *field_renderer = new field_map_renderer<point>();
 
   provider.register_map_renderer(path_renderer);
   provider.register_map_renderer(field_renderer);
@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
   provider.send_geo_data(p);
 
   provider.unregister_map_renderer(path_renderer);
-  provider.send_geo_data(point);
+  provider.send_geo_data(p);
   provider.unregister_map_renderer(field_renderer);
 
   return 0;
