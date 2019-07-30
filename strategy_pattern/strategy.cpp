@@ -8,23 +8,6 @@
 #include <iostream>
 #include <string>
 
-// template <typename UnaryPredicate, typename UnaryOperator>
-// static void publish_text(std::string text, UnaryPredicate<std::string>
-// filter,
-//                         UnaryOperator<std::string> format) {
-//  if (filter.test(text)) {
-//    std::cout << format.apply(text) << "\n";
-//  }
-//
-//  std::transform(text.begin(), text.end(), text.begin(), ::toupper);
-//}
-
-// template <typename UnaryOperator>
-// static void publish_text(std::string text, UnaryOperator<std::string> format)
-// {
-//  std::cout << format(text) << "\n";
-//}
-
 static void publish_text(std::string text,
                          std::function<bool(std::string)> filter,
                          std::function<std::string(std::string)> format) {
@@ -33,7 +16,7 @@ static void publish_text(std::string text,
   }
 }
 
-// TODO: use type traits define correct return types for UnaryPredicate and
+// TODO: use concepts to define correct return types for UnaryPredicate and
 // UnaryOperator
 template <typename UnaryPredicate, typename UnaryOperator>
 static void publish_text2(std::string text, UnaryPredicate &&filter,
