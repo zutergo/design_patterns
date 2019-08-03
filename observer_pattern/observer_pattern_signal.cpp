@@ -3,58 +3,38 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include "geometry.h"
+#include "observers.h"
+#include "signal.h"
 #include <any>
-#include <boost/signals2.hpp>
-#include <iostream>
 #include <variant>
 
-using namespace boost;
-using namespace signals2;
-
-namespace {
-
-template <typename R, typename Args...> signal<R(Args..)> geo_data_signal;
-
-auto path_renderer = [](auto geo_data) {
-  std::cout << "Path renderer: "
-            << "\n";
-};
-
-auto field_renderer = [](ring field) {
-  std::cout << "Field renderer: "
-            << "\n";
-};
-
-void variant_detail_renderer(std::variant<point, line, ring> detail) {
-  std::cout << "Variant Detail renderer: "
-            << "\n";
-}
-
-void any_detail_renderer(std::any detail) {
-  std::cout << "Any Detail renderer: "
-            << "\n";
-}
-
-} // namespace
+template <typename... Args> using geo_data_signal = signal<Args...>;
 
 int main(int argc, char *argv[]) {
   point a{0.0, 0.0};
-  point b{0.0, 0.5};
+  point b{0.0, 5.0};
   point c{5.0, 5.0};
-  point d{5.00, 0};
+  point d{5.0, 0.0};
   line path{a, b};
   ring field{a, b, c, d, a};
 
   std::variant<point, line, ring> variant_geo_data = field;
   std::any any_geo_data = path;
 
-  //  render.connect(path_renderer);
-  //  render.connect(field_renderer);
-  geo_data_signal<void(std::any)>.connect(any_detail_renderer);
-  geo_data_signal<void(std::any)>(any_geo_data);
+  signal<line> line_signal;
+  signal<ring> ring_signal;
 
-  // provider.render.disconnect(field_renderer);
-  // provider.render();
+  line_signal.connect(path_renderer);
+  auto ring_connection = ring_signal.connect(path_renderer);
+  auto field_connection = ring_signal.connect(field_renderer);
+  line_signal(path);
+
+  for (int i = 0; i < 100000000; ++i) {
+    ring_signal(field);
+  }
+
+  ring_signal.disconnect(field_connection);
+  ring_signal(field);
 
   return 0;
 }
