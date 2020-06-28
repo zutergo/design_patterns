@@ -10,6 +10,11 @@ template <class T> auto identity(T id) {
   return [id]() { return id; };
 };
 
+/**
+ * @brief Creates a function from a partially applied function.
+ * @param f Function to be partially applied.
+ * @param args Arguments of the partial application.
+ */
 template <typename F, typename... Args> auto partialapply(F f, Args... args) {
   return [=](auto... rargs) { return f(args..., rargs...); };
 };
